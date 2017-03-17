@@ -1,20 +1,23 @@
 #include <SoftwareSerial.h>
 #include <PLabBTSerial.h>
 
-#define txPin 3
-#define rxPin 2
+#define txPin 2
+#define rxPin 3
 #define ledPin 13
 
 PLabBTSerial btSerial(txPin, rxPin);
 
 void setup() {
+  Serial.begin(9600);
   btSerial.begin(9600);
-  pinMode(ledPinOne, OUTPUT);
+  pinMode(ledPin, OUTPUT);
 }
 
 void loop() {
   while (btSerial.available()) {
     char c = btSerial.read();
+    Serial.print(c);
+    btSerial.write("Hallo");
     if (c == 'M') {
         digitalWrite(ledPin, HIGH);
         btSerial.write("1");
