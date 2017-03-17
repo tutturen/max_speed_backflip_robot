@@ -32,8 +32,6 @@ unsigned int sensor_values[NUM_SENSORS];
 
 ZumoReflectanceSensorArray sensors;
 
-
-
 void setup()
 {
    sensors.init();
