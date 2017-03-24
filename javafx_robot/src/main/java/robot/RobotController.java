@@ -2,6 +2,7 @@ package robot;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -19,9 +20,17 @@ public class RobotController {
 			void onCharReceived(char c) {
 				System.out.println("Char received: " + c);
 				if (c == '1') {
-					displayStrategy("MAX SPEED");
+					Platform.runLater(new Runnable(){
+					public void run(){
+						displayStrategy("MAX SPEED"); 						
+					}
+					});
 				} else if (c == '2') {
-					displayStrategy("BACKFLIP");
+					Platform.runLater(new Runnable(){
+						public void run(){
+							displayStrategy("BACKFLIP"); 						
+						}
+					});
 				}
 			}
 		});
@@ -53,13 +62,13 @@ public class RobotController {
 	@FXML
 	void onMaxSpeedClick() {
 		System.out.println("max");
-		// bluetooth.sendText("MAX");
+		bluetooth.sendText("MAX");
 	}
 	
 	@FXML
 	void onBackflipClick() {
 		System.out.println("flip");
-		// bluetooth.sendText("FLIP");
+		bluetooth.sendText("FLIP");
 	}
 
 }

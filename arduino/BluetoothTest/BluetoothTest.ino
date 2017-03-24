@@ -29,5 +29,5 @@ void loop() {
     }
   }
   delay(1000);
-  Serial.println("yes");
+  //Serial.println("yes");
 }
