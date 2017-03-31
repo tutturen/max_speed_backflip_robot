@@ -2,16 +2,13 @@
 #include <ZumoReflectanceSensorArray.h>
 #include <Pushbutton.h>
 #include <ZumoMotors.h>
-
 #include <NewServo.h>
 
-#define treshold 1800
 
-ZumoReflectanceSensorArray reflectanceSensors;
+ZumoReflectanceSensorArray reflectanceSensors(QTR_NO_EMITTER_PIN);
 ZumoMotors motors;
 
 double lastDistance = 100;
-
 bool flipServo = false;
 
 unsigned int reflectanceValues[6];
@@ -23,6 +20,7 @@ NewServo servo;
 #define echoPin 5
 #define servoPin 4
 
+#define treshold 1800
 #define REVERSE_SPEED     200 // 0 is stopped, 400 is full speed
 #define TURN_SPEED        400
 #define FORWARD_SPEED     100
@@ -44,28 +42,21 @@ void setup() {
 void loop() {
   int distance = getDistance();
 
-  Serial.println(servoPin);
-  detectLine(reflectanceValues);
-  rotateServoNext();
-  killOpponent(servoPosition, distance);
-  detectLine(reflectanceValues);
+  detectLine();
   rotateServoNext();
   detectOpponent(servoPosition, distance);
-  detectLine(reflectanceValues);
+  killOpponent(servoPosition, distance);
   motors.setSpeeds(0, 0);
 }
 
-void detectLine(int reflectanceValues[]) {
-  reflectanceSensors.read(reflectanceValues);
-  Serial.println(reflectanceValues[1]);
-  Serial.println(reflectanceValues[4]);
+void detectLine() {
+  //reflectanceSensors.read(reflectanceValues);
   if (isLineLeft(reflectanceValues)) {
     // if leftmost sensor detects line, reverse and turn to the right
     motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
     delay(REVERSE_DURATION);
     motors.setSpeeds(TURN_SPEED, -TURN_SPEED);
     delay(TURN_DURATION);
-    motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
   }
   else if (isLineRight(reflectanceValues))
   {
@@ -74,7 +65,6 @@ void detectLine(int reflectanceValues[]) {
     delay(REVERSE_DURATION);
     motors.setSpeeds(-TURN_SPEED, TURN_SPEED);
     delay(TURN_DURATION);
-    motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
   }
 }
 
@@ -105,21 +95,22 @@ double getDistance() {
 }
 
 void rotateServoNext() {
+  Serial.println("SERVO POSITION:");
   Serial.println(servoPosition);
   if (servoPosition > 160 || servoPosition < 20) {
     flipServo = !flipServo;
   }
   if (flipServo) {
-     rotateServo((servoPosition + 20) % 181);
+     rotateServo(servoPosition + 10);
   } else {
-      rotateServo((servoPosition - 20) % 0);
+      rotateServo(servoPosition - 10);
   }
 }
 
 void rotateServo(int sPosition) {
   servo.write(sPosition);
   servoPosition = sPosition;
-  delay(100);
+  delay(50);
 }
 
 void killOpponent(int positionServo, double distance) {
@@ -139,7 +130,6 @@ void killOpponent(int positionServo, double distance) {
 }
 
 void detectOpponent(int positionServo, double distance) {
-   Serial.println(distance);
   if (distance < 20) {
     if (positionServo > 90) {
       // turn left
@@ -157,6 +147,7 @@ void detectOpponent(int positionServo, double distance) {
       motors.setSpeeds(0, 0);
     }
     rotateServo(90);
+    flipServo = !flipServo;
     delay(200);
   }
 }
