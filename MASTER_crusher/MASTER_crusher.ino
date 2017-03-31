@@ -31,7 +31,6 @@ void setup() {
   reflectanceSensors.init();
   button.waitForButton();  
   Serial.begin(9600);
-
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   Serial.println("Attaching servo");
@@ -42,15 +41,17 @@ void setup() {
 void loop() {
   int distance = getDistance();
 
-  detectLine();
+  //detectLine();
+  //reflectanceSensors.read(reflectanceValues);
+
   rotateServoNext();
-  detectOpponent(servoPosition, distance);
-  killOpponent(servoPosition, distance);
+  //detectOpponent(servoPosition, distance);
+  //killOpponent(servoPosition, distance);
   motors.setSpeeds(0, 0);
 }
 
 void detectLine() {
-  //reflectanceSensors.read(reflectanceValues);
+  reflectanceSensors.read(reflectanceValues);
   if (isLineLeft(reflectanceValues)) {
     // if leftmost sensor detects line, reverse and turn to the right
     motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
@@ -101,16 +102,16 @@ void rotateServoNext() {
     flipServo = !flipServo;
   }
   if (flipServo) {
-     rotateServo(servoPosition + 10);
+     rotateServo(servoPosition + 15);
   } else {
-      rotateServo(servoPosition - 10);
+      rotateServo(servoPosition - 15);
   }
 }
 
 void rotateServo(int sPosition) {
   servo.write(sPosition);
   servoPosition = sPosition;
-  delay(50);
+  delay(15);
 }
 
 void killOpponent(int positionServo, double distance) {
