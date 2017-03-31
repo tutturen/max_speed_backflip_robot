@@ -2,23 +2,24 @@
 #include <ZumoReflectanceSensorArray.h>
 #include <Pushbutton.h>
 #include <ZumoMotors.h>
-#include <NewServo.h>
+#include <PLabBTSerial.h>
 
 
 ZumoReflectanceSensorArray reflectanceSensors(QTR_NO_EMITTER_PIN);
 ZumoMotors motors;
 
 double lastDistance = 100;
-bool flipServo = false;
 
 unsigned int reflectanceValues[6];
-int servoPosition = 90;
 Pushbutton button(12);
 
-NewServo servo;
 #define trigPin 6
 #define echoPin 5
-#define servoPin 4
+
+#define rxPin 3
+#define txPin 4
+
+PLabBTSerial btSerial(txPin, rxPin);
 
 #define treshold 1800
 #define REVERSE_SPEED     200 // 0 is stopped, 400 is full speed
@@ -27,27 +28,88 @@ NewServo servo;
 #define REVERSE_DURATION  300 // ms
 #define TURN_DURATION     400 // ms
 
+bool useStupidProgram = false;
+
 void setup() {
-  reflectanceSensors.init();
-  button.waitForButton();  
   Serial.begin(9600);
+  btSerial.begin(9600);
+  reflectanceSensors.init();
+  setBluetoothProgram();
+  button.waitForButton();
+  if (useStupidProgram) {
+    superStartRight();
+  } else {
+    superStartLeft();
+  }
+
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
-  Serial.println("Attaching servo");
-  servo.attach(servoPin);
-  servo.write(servoPosition);
 }
 
 void loop() {
+  Serial.println("Using stupid program:");
+  Serial.println(useStupidProgram);
+
+
   int distance = getDistance();
-
-  //detectLine();
-  //reflectanceSensors.read(reflectanceValues);
-
-  rotateServoNext();
-  //detectOpponent(servoPosition, distance);
-  //killOpponent(servoPosition, distance);
+  detectLine();
+  detectOpponent(distance);
+  killOpponent(distance);
+  detectLine();
+  runRandom();
   motors.setSpeeds(0, 0);
+}
+
+void setBluetoothProgram() {
+  while (true) {
+    Serial.println("Venter BT");
+    while (btSerial.available()) {
+      char c = btSerial.read();
+      Serial.print(c);
+      if (c == 'M') {
+          useStupidProgram = true;
+          btSerial.write("1");
+          return;
+      }
+      if (c == 'F') {
+          useStupidProgram = false;
+          btSerial.write("2");
+          return;
+      }
+    }
+    delay(500);
+  }
+
+}
+
+void runRandom() {
+  int dis = getDistance();
+  if (dis < 40) {
+    return;
+  }
+  motors.setSpeeds(random(-400, 400), random(-400, 400));
+  delay(300);
+  motors.setSpeeds(0, 0);
+}
+
+void superStartRight() {
+    motors.setSpeeds(-200, -200);
+    delay(1000);
+    motors.setSpeeds(200, -200);
+    delay(300);
+    motors.setSpeeds(400, 400);
+    delay(500);
+    motors.setSpeeds(0, 0);
+}
+
+void superStartLeft() {
+    motors.setSpeeds(-200, -200);
+    delay(1000);
+    motors.setSpeeds(-200, 200);
+    delay(300);
+    motors.setSpeeds(400, 400);
+    delay(500);
+    motors.setSpeeds(0, 0);
 }
 
 void detectLine() {
@@ -95,61 +157,39 @@ double getDistance() {
   return 100;
 }
 
-void rotateServoNext() {
-  Serial.println("SERVO POSITION:");
-  Serial.println(servoPosition);
-  if (servoPosition > 160 || servoPosition < 20) {
-    flipServo = !flipServo;
-  }
-  if (flipServo) {
-     rotateServo(servoPosition + 15);
-  } else {
-      rotateServo(servoPosition - 15);
-  }
-}
-
-void rotateServo(int sPosition) {
-  servo.write(sPosition);
-  servoPosition = sPosition;
-  delay(15);
-}
-
-void killOpponent(int positionServo, double distance) {
+void killOpponent(double distance) {
   int maxAngle = 120;
   int minAngle = 60;
-  int maxDistance = 40;
+  int maxDistance = 60;
   int superDistance = 10;
 
+  int dis = getDistance();
 
-  if (positionServo > minAngle && positionServo < maxAngle) {
-    if (distance < maxDistance) {
-      // ATTACK!
-      motors.setSpeeds(400, 400);
-      delay(300);
-    }
+  if (dis < maxDistance) {
+    // ATTACK!
+    motors.setSpeeds(400, 400);
+    delay(300);
   }
 }
 
-void detectOpponent(int positionServo, double distance) {
-  if (distance < 20) {
-    if (positionServo > 90) {
-      // turn left
-      int turnDegrees = 180 - positionServo;
-      
-      motors.setSpeeds(-400, 400);
-      delay(100);
-      motors.setSpeeds(0, 0);
-    } else {
-      // turn right
-      int turnDegrees = 90 - positionServo;
-
-      motors.setSpeeds(400, -400);
-      delay(100);
-      motors.setSpeeds(0, 0);
+void detectOpponent(double distance) {
+  int i = 0;
+  int dir = random(1, 101);
+  while (i < 5) {
+    int dis = getDistance();
+    if (dis < 20) {
+        motors.setSpeeds(0, 0);
+        return;
     }
-    rotateServo(90);
-    flipServo = !flipServo;
-    delay(200);
+    delay(100);
+    if (dir < 50) {
+      motors.setSpeeds(-200, 200);
+
+    } else {
+      motors.setSpeeds(200, -200);
+    }
+    i++;
   }
+    motors.setSpeeds(0, 0);
 }
 
