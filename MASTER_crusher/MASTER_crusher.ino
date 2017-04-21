@@ -19,6 +19,8 @@ Pushbutton button(12);
 #define rxPin 3
 #define txPin 4
 
+#define yellowLedPin 2
+
 PLabBTSerial btSerial(txPin, rxPin);
 
 #define treshold 1800
@@ -28,7 +30,8 @@ PLabBTSerial btSerial(txPin, rxPin);
 #define REVERSE_DURATION  300 // ms
 #define TURN_DURATION     400 // ms
 
-bool useStupidProgram = false;
+bool useBt = false;
+bool useRightProgram = false;
 
 void setup() {
   Serial.begin(9600);
@@ -36,7 +39,7 @@ void setup() {
   reflectanceSensors.init();
   setBluetoothProgram();
   button.waitForButton();
-  if (useStupidProgram) {
+  if (useRightProgram) {
     superStartRight();
   } else {
     superStartLeft();
@@ -44,11 +47,12 @@ void setup() {
 
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
+  pinMode(yellowLedPin, OUTPUT);
 }
 
 void loop() {
-  Serial.println("Using stupid program:");
-  Serial.println(useStupidProgram);
+  Serial.println("Using right program:");
+  Serial.println(useRightProgram);
 
 
   int distance = getDistance();
@@ -61,18 +65,28 @@ void loop() {
 }
 
 void setBluetoothProgram() {
+  if (!useBt) {
+    if (random(0, 2) == 0) {
+      useRightProgram = true;
+      digitalWrite(yellowLedPin, HIGH);
+    } else {
+      useRightProgram = false;
+      digitalWrite(yellowLedPin, LOW);
+    }
+    return;
+  }
   while (true) {
     Serial.println("Venter BT");
     while (btSerial.available()) {
       char c = btSerial.read();
       Serial.print(c);
       if (c == 'M') {
-          useStupidProgram = true;
+          useRightProgram = true;
           btSerial.write("1");
           return;
       }
       if (c == 'F') {
-          useStupidProgram = false;
+          useRightProgram = false;
           btSerial.write("2");
           return;
       }
