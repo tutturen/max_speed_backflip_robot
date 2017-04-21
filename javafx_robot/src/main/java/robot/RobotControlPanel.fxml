@@ -38,7 +38,7 @@
             <Font size="36.0" />
          </font>
       </Label>
-      <Button onAction="#onMaxSpeedClick" layoutX="177.0" layoutY="330.0" mnemonicParsing="false"  prefHeight="27.0" prefWidth="314.0" style="-fx-background-color: #ff851b; -fx-cursor: hand;" text="MAX SPEED STRATEGY" textFill="WHITE" />
-      <Button onAction="#onBackflipClick" layoutX="177.0" layoutY="374.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="314.0" style="-fx-background-color: #ff851b; -fx-cursor: hand;" text="BACKFLIP STRATEGY" textFill="WHITE" />
+      <Button onAction="#onMaxSpeedClick" layoutX="177.0" layoutY="330.0" mnemonicParsing="false"  prefHeight="27.0" prefWidth="314.0" style="-fx-background-color: #ff851b; -fx-cursor: hand;" text="START LEFT STRATEGY" textFill="WHITE" />
+      <Button onAction="#onBackflipClick" layoutX="177.0" layoutY="374.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="314.0" style="-fx-background-color: #ff851b; -fx-cursor: hand;" text="START RIGHT STRATEGY" textFill="WHITE" />
    </children>
 </Pane>
