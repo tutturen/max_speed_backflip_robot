@@ -3,6 +3,7 @@
 #include <Pushbutton.h>
 #include <ZumoMotors.h>
 #include <PLabBTSerial.h>
+#include <EEPROM.h>
 
 
 ZumoReflectanceSensorArray reflectanceSensors(QTR_NO_EMITTER_PIN);
@@ -37,7 +38,6 @@ void setup() {
   Serial.begin(9600);
   btSerial.begin(9600);
   reflectanceSensors.init();
-  randomSeed(analogRead(0));
   Serial.println("Starting master crusher");
   setBluetoothProgram();
   button.waitForButton();
@@ -69,19 +69,19 @@ void loop() {
 
 void setBluetoothProgram() {
   if (!useBt) {
+    byte value = EEPROM.read(0);
+
     Serial.println("We are not using bluetooth");
-    random(2, 500);
-    random(1, 4000);
-    int nr = random(1, 399);
-    Serial.println(nr);
-    if (nr < 200) {
+    if (value == 1) {
       useRightProgram = true;
       Serial.println("Using right prog, setting led high");
       digitalWrite(yellowLedPin, HIGH);
+      EEPROM.write(0, 0);
     } else {
       Serial.println("Using left prog, setting led low");
       useRightProgram = false;
       digitalWrite(yellowLedPin, LOW);
+      EEPROM.write(0, 1);
     }
     return;
   }
