@@ -37,8 +37,11 @@ void setup() {
   Serial.begin(9600);
   btSerial.begin(9600);
   reflectanceSensors.init();
+  randomSeed(analogRead(0));
+  Serial.println("Starting master crusher");
   setBluetoothProgram();
   button.waitForButton();
+
   if (useRightProgram) {
     superStartRight();
   } else {
@@ -66,15 +69,23 @@ void loop() {
 
 void setBluetoothProgram() {
   if (!useBt) {
-    if (random(0, 2) == 0) {
+    Serial.println("We are not using bluetooth");
+    random(2, 500);
+    random(1, 4000);
+    int nr = random(1, 399);
+    Serial.println(nr);
+    if (nr < 200) {
       useRightProgram = true;
+      Serial.println("Using right prog, setting led high");
       digitalWrite(yellowLedPin, HIGH);
     } else {
+      Serial.println("Using left prog, setting led low");
       useRightProgram = false;
       digitalWrite(yellowLedPin, LOW);
     }
     return;
   }
+  Serial.println("We ARE using bluetooth");
   while (true) {
     Serial.println("Venter BT");
     while (btSerial.available()) {
